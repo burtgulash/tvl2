@@ -29,21 +29,21 @@ def else_(x, y, _):
 
 def ex(env, x):
     while True:
-
         if isinstance(x, Value):
             if x.T == "var":
                 x = env_lookup(env, x.value)
                 continue
-            else:
-                y = x
+            if x.T == "box":
+                x = ex(env, x.value)
+                x = Value("box", x)
             break
         elif isinstance(x, Token):
             if x.T == "num":
-                y = Value("num", int(x.value))
+                x = Value("num", int(x.value))
             elif x.T == "symbol":
-                y = Value("sym", x.value[1:])
+                x = Value("sym", x.value[1:])
             elif x.T == "string":
-                y = Value("str", x.value)
+                x = Value("str", x.value)
             elif x.T in ("punc", "var"):
                 x = Value("var", x.value)
                 continue
@@ -63,8 +63,7 @@ def ex(env, x):
         else:
             raise AssertionError("eval: Can only process list or TUPLE")
 
-
-    return y
+    return x
 
 
 FNS = {
