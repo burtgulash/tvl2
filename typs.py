@@ -13,7 +13,8 @@ class Token:
 
 class Value:
 
-    def __init__(self, T, value):
+    def __init__(self, T, value, box=False):
+        self.B = box
         self.T = T
         self.value = value
 

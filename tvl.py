@@ -35,7 +35,7 @@ def ex(env, x):
                 continue
             if x.T == "box":
                 x = ex(env, x.value)
-                x = Value("box", x)
+                x.B = True
             break
         elif isinstance(x, Token):
             if x.T == "num":
@@ -58,17 +58,35 @@ def ex(env, x):
             if H.T != "special":
                 R = ex(env, R)
 
-            assert H.T in ("builtin", "special")
-            x = H.value(L, R, env)
+            if H.T in ("builtin", "special"):
+                x = H.value(L, R, env)
+            elif H.T == "block":
+                env1 = (env, {
+                    "x": L,
+                    "y": R,
+                })
+                x = ex(env1, H.value)
+            else:
+                raise Exception(f"Can't process non function: {H.value}::{H.T}")
         else:
             raise AssertionError("eval: Can only process list or TUPLE")
 
     return x
 
 
+CONS = Value("builtin", cons_)
+
 FNS = {
-    ".": Value("builtin", cons_),
+    # cons
+    ".": CONS,
+    ":": CONS,
+    ",": CONS,
+    ";": CONS,
+
+    # arithmetic
     "+": Value("builtin", plus_),
+
+    # conditionals
     "?": Value("special", ask_),
     ":|": Value("special", else_),
 }

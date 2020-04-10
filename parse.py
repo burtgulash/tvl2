@@ -11,9 +11,14 @@ def pp(x):
         return "({})".format(" ".join(map(pp, x)))
     elif isinstance(x, Value):
         if x.T == "box":
-            return "[{}]".format(pp(x.value))
-        if x.T == "fnbox":
-            return "{{{}}}".format(pp(x.value))
+            return "\[{}]".format(pp(x.value))
+        if x.T == "block":
+            return "\{{{}}}".format(pp(x.value))
+        if x.T == "cons":
+            return "({}.{})".format(pp(x.value[0]), pp(x.value[1]))
+
+        if x.B:
+            return "[{}]".format(x.value)
         return x.value
     else:
         return x.value
@@ -25,15 +30,6 @@ end_paren = {
     "\(": ")",
 }
 
-def box(type_, x):
-    if type_ == "(":
-        return x
-    if type_ in ("[", "\("):
-        return Value("box", x)
-    if type_ == "{":
-        return Value("fnbox", x)
-    assert False
-
 def flush_til(buf, outq, lvl):
     R = buf.pop()
     while outq:
@@ -43,6 +39,15 @@ def flush_til(buf, outq, lvl):
         L = buf.pop()
         R = [L, H, R]
     return R
+
+def box(type_, x):
+    if type_ == "(":
+        return x
+    if type_ == "[":
+        return Value("box", x)
+    if type_ in ("{", "\("):
+        return Value("block", x)
+    assert False
 
 def pparse(toks):
     tok = next(toks)
@@ -74,11 +79,9 @@ def parse(expected_end, toks):
         if end:
             raise Exception("can't END on R")
 
+        lvl = 1
         right = 0
-        if isinstance(H, list):
-            lvl = 1
-        else:
-            assert isinstance(H, Token)
+        if isinstance(H, Token):
             op = H.value
             if op == "|":
                 lvl = 5
@@ -95,8 +98,6 @@ def parse(expected_end, toks):
             elif op.startswith(":"):
                 lvl = 0
                 right = 1
-            else:
-                lvl = 0
 
         buf.append(flush_til(buf, outq, lvl - right))
         buf.append(R)
