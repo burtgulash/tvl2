@@ -9,8 +9,30 @@ from tvl_types import Token, Value, NIL
 def pp(x):
     if isinstance(x, list):
         return "({})".format(" ".join(map(pp, x)))
+    elif isinstance(x, Value):
+        if x.T == "box":
+            return "[{}]".format(x.value)
+        if x.T == "fnbox":
+            return "{{{}}}".format(x.value)
+        return x.value
     else:
         return x.value
+
+expected_end = {
+    "(": ")",
+    "[": "]",
+    "{": "}",
+    "\(": ")",
+}
+
+def box(type_, x):
+    if type_ == "(":
+        return x
+    if type_ in ("[", "\("):
+        return Value("box", x)
+    if type_ == "{":
+        return Value("fnbox", x)
+    assert False
 
 def flush_til(buf, outq, lvl):
     R = buf.pop()
@@ -27,7 +49,9 @@ def pparse(toks):
     if tok.T == "rparen":
         x, end = tok, True
     elif tok.T == "lparen":
-        x, end = parse(")", toks), None
+        end = None
+        x = parse(end_paren[tok.value], toks)
+        x = box(tok.value, x)
     else:
         x, end = tok, None
     return x, end
