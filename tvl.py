@@ -4,7 +4,7 @@ import sys
 
 import lex
 from parse import parse, pp
-from tvl_types import Token, Value, NIL, ELSE
+from typs import Token, Value, NIL, ELSE
 
 
 def cons_(x, y, _):

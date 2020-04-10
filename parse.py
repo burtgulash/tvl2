@@ -3,7 +3,7 @@
 import sys
 
 import lex
-from tvl_types import Token, Value, NIL
+from typs import Token, Value, NIL
 
 
 def pp(x):
@@ -11,14 +11,14 @@ def pp(x):
         return "({})".format(" ".join(map(pp, x)))
     elif isinstance(x, Value):
         if x.T == "box":
-            return "[{}]".format(x.value)
+            return "[{}]".format(pp(x.value))
         if x.T == "fnbox":
-            return "{{{}}}".format(x.value)
+            return "{{{}}}".format(pp(x.value))
         return x.value
     else:
         return x.value
 
-expected_end = {
+end_paren = {
     "(": ")",
     "[": "]",
     "{": "}",

@@ -2,7 +2,7 @@
 
 import sys
 
-from tvl_types import Token
+from typs import Token
 
 
 abc = "abcdefghijklmnopqrstuvwxyz"
