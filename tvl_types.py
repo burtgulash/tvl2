@@ -28,3 +28,4 @@ class Value:
         return str(self.value)
 
 NIL = Value("nil", "()")
+ELSE = Value("else", "else")
