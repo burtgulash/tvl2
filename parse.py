@@ -79,20 +79,22 @@ def parse(expected_end, toks):
             op = H.value
             if op == "|":
                 lvl = 5
-            elif op == ":|":
+                right = 1
+            elif op == "=":
                 lvl = 4
                 right = 1
-            elif op == ",":
+            elif op == ":|":
                 lvl = 3
+                right = 1
+            elif op == ",":
+                lvl = 2
             elif op == ";":
                 lvl = 2
                 right = 1
-            elif op == ".":
-                lvl = 1
             elif op.startswith(":"):
-                lvl = 0
                 right = 1
 
+        assert right in (0, 1)
         buf.append(flush_til(buf, outq, lvl - right))
         buf.append(R)
         outq.append((H, lvl))

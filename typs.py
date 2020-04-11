@@ -50,6 +50,7 @@ def pp(x):
             return "Fn({}.{} -> ...)".format(fn.x_var, fn.y_var)
         return str(x.value)
     elif isinstance(x, Token):
-        return "T:" + str(x.value)
+        #return "T:" + str(x.value)
+        return str(x.value)
 
     assert False
