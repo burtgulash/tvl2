@@ -19,6 +19,15 @@ class Box:
         self.value = value
 
 
+class Fn:
+
+    def __init__(self, env, x_var, y_var, body):
+        self.env = env
+        self.x_var = x_var
+        self.y_var = y_var
+        self.body = body
+
+
 NIL = Value("nil", "()")
 ELSE = Value("else", "else")
 
@@ -38,6 +47,6 @@ def pp(x):
             return "({}.{})".format(pp(x.value[0]), pp(x.value[1]))
         return str(x.value)
     elif isinstance(x, Token):
-        return str(x.value)
+        return "T:" + str(x.value)
 
     assert False

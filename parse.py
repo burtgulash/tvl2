@@ -100,13 +100,16 @@ def parse(expected_end, toks):
     return flush_til(buf, outq, 999)
 
 
-
-
+def Parse(x):
+    x = lex.lex(x)
+    x = parse("EOF", x)
+    return x
 
 
 if __name__ == "__main__":
     x = sys.argv[1]
     print(x)
-    x = parse("EOF", lex.lex(x))
+    x = lex.lex(x)
+    x = parse("EOF", x)
     x = pp(x)
     print(x)
