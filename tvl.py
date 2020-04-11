@@ -27,6 +27,22 @@ def else_(x, y, _):
     return x
 
 
+def qq_(x, _, env):
+    if isinstance(x, (Token, Value)):
+        pass
+    elif isinstance(x, Box):
+        if x.T == "quote":
+            x = ex(env, x.value)
+        else:
+            x = Box(x.T, qq_(x.value, None, env))
+    elif isinstance(x, list):
+        x = [qq_(x_, None, env) for x_ in x]
+    else:
+        assert False
+
+    return x
+
+
 def ex(env, x):
     while True:
         if isinstance(x, Value):
@@ -45,7 +61,7 @@ def ex(env, x):
                 x = Box("box", x)
                 break
             if x.T == "quote":
-                x = qq(x.value, None, env)
+                x = qq_(x.value, None, env)
                 break
             assert False
         elif isinstance(x, Token):
@@ -100,6 +116,9 @@ FNS = {
     # conditionals
     "?": Value("special", ask_),
     ":|": Value("special", else_),
+
+    # qq
+    "qq": Value("builtin", qq_),
 }
 
 def env_lookup(env, key):

@@ -4,12 +4,6 @@ class Token:
         self.T = T
         self.value = value
 
-    def __repr__(self):
-        return f"({self.value}::{self.T})"
-
-    def __str__(self):
-        return str(self.value)
-
 
 class Value:
 
@@ -17,15 +11,6 @@ class Value:
         self.T = T
         self.value = value
 
-    def __repr__(self):
-        if self.T == "builtin":
-            return f"{self.T}"
-        if self.T == "special":
-            return f"{self.T}"
-        return f"({self.value}::{self.T})"
-
-    def __str__(self):
-        return str(self.value)
 
 class Box:
 
@@ -51,7 +36,8 @@ def pp(x):
     elif isinstance(x, Value):
         if x.T == "cons":
             return "({}.{})".format(pp(x.value[0]), pp(x.value[1]))
-        return x.value
+        return str(x.value)
     elif isinstance(x, Token):
-        return x.value
+        return str(x.value)
+
     assert False
