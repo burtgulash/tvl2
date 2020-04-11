@@ -69,6 +69,7 @@ def fn_(x, _, env):
 
 
 def ex(env, x):
+    in_func = False
     while True:
         if isinstance(x, Value):
             if x.T == "var":
@@ -110,26 +111,33 @@ def ex(env, x):
             if isinstance(H, Value) and H.T in ("builtin", "special"):
                 x = H.value(L, R, env)
             elif isinstance(H, Box) and H.T == "block":
-                env1 = {}
-                env1["x"] = L
-                env1["y"] = R
-                env1 = (env, env1)
-
-                x = ex(env1, H.value)
+                if in_func:
+                    env = env[0]
+                env = (env, {"x": L, "y": R})
+                x = H.value
+                #x = ex(env1, H.value)
             elif isinstance(H, Value) and H.T == "fn":
-                fn = H.value
-                env1 = {}
-                if fn.x_var is not None:
-                    env1[fn.x_var] = L
-                if fn.y_var is not None:
-                    env1[fn.y_var] = R
-                env1 = (fn.env, env1)
+                if in_func:
+                    env = env[0]
 
-                x = ex(env1, fn.body)
+                fn = H.value
+                env_ = {}
+                if fn.x_var is not None:
+                    env_[fn.x_var] = L
+                if fn.y_var is not None:
+                    env_[fn.y_var] = R
+                env = (fn.env, env_)
+
+                x = fn.body
+                #x = ex(env1, fn.body)
             else:
                 raise Exception(f"Can't process non function: {type(H).__name__}::{H.T}")
         else:
             raise AssertionError(f"eval: Can't evaluate {x}")
+
+    # clean up func env
+    if in_func:
+        env = env[0]
 
     return x
 
