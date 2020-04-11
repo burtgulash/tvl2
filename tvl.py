@@ -45,16 +45,11 @@ def qq_(x, _, env):
 def fn_(x, _, env):
     x_var = y_var = None
 
-    print("X", x.value[0].value)
-
     if isinstance(x, Value) and x.T == "cons":
-        x = x.value[1]
         head = x.value[0]
+        x = x.value[1]
 
-        print("HEAD", head.value)
-        print("BODY", type(x))
         if isinstance(head, Value) and head.T == "cons":
-            print("TU")
             x_var = head.value[0]
             assert isinstance(x_var, Value) and x_var.T == "sym"
             x_var = x_var.value[1:]
@@ -67,8 +62,9 @@ def fn_(x, _, env):
             x_var = head.value[1:]
 
     assert isinstance(x, Box) and x.T == "block"
+    body = x.value
 
-    return Fn(env, x_var, y_var, body)
+    return Value("fn", Fn(env, x_var, y_var, body))
 
 
 
@@ -133,7 +129,7 @@ def ex(env, x):
             else:
                 raise Exception(f"Can't process non function: {type(H).__name__}::{H.T}")
         else:
-            raise AssertionError("eval: Can only process list or TUPLE")
+            raise AssertionError(f"eval: Can't evaluate {x}")
 
     return x
 
