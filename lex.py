@@ -48,16 +48,17 @@ def lex(chars):
                 buf += c
                 status = "symbol"
                 continue
-            if c in punc:
+            elif c in punc:
                 buf += c
                 status = "punc"
                 continue
-            if c == "(":
+            elif c in "([{":
                 buf += c
-                status = "lparen"
-                yield Token(status, buf)
+                yield Token("lparen", buf)
                 status, buf = None, ""
-            raise Exception(f"can't escape this character: {c}")
+                continue
+            else:
+                raise Exception(f"can't escape this character: {c}")
         elif status in ("symbol", "var"):
             if c.lower() in abc or c in num or c == "_":
                 buf += c
@@ -88,7 +89,6 @@ def lex(chars):
         buf += c
         if c == "\\":
             # TODO symbol_start. Symbol can only start with abc
-            status = "symbol" # TODO rm
             status = "escape"
         elif c == '"':
             status = "string"

@@ -3,8 +3,8 @@
 import sys
 
 import lex
-from parse import parse, pp
-from typs import Token, Value, NIL, ELSE
+import parse
+from typs import Box, Token, Value, NIL, ELSE, pp
 
 
 def cons_(x, y, _):
@@ -37,6 +37,17 @@ def ex(env, x):
                 x = ex(env, x.value)
                 x.B = True
             break
+        elif isinstance(x, Box):
+            if x.T == "block":
+                break
+            if x.T == "box":
+                x = ex(env, x.value)
+                x = Box("box", x)
+                break
+            if x.T == "quote":
+                x = qq(x.value, None, env)
+                break
+            assert False
         elif isinstance(x, Token):
             if x.T == "num":
                 x = Value("num", int(x.value))
@@ -104,7 +115,7 @@ def env_lookup(env, key):
 if __name__ == "__main__":
     x = sys.argv[1]
     print("LEX", x)
-    x = parse("EOF", lex.lex(x))
+    x = parse.parse("EOF", lex.lex(x))
     print("PAR", pp(x))
 
     env = (None, {

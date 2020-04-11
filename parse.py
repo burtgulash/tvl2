@@ -3,31 +3,16 @@
 import sys
 
 import lex
-from typs import Token, Value, NIL
+from typs import Box, Token, NIL, pp
 
-
-def pp(x):
-    if isinstance(x, list):
-        return "({})".format(" ".join(map(pp, x)))
-    elif isinstance(x, Value):
-        if x.T == "box":
-            return "\[{}]".format(pp(x.value))
-        if x.T == "block":
-            return "\{{{}}}".format(pp(x.value))
-        if x.T == "cons":
-            return "({}.{})".format(pp(x.value[0]), pp(x.value[1]))
-
-        if x.B:
-            return "[{}]".format(x.value)
-        return x.value
-    else:
-        return x.value
 
 end_paren = {
     "(": ")",
     "[": "]",
     "{": "}",
     "\(": ")",
+    "\[": "]",
+    "\{": "}",
 }
 
 def flush_til(buf, outq, lvl):
@@ -40,14 +25,23 @@ def flush_til(buf, outq, lvl):
         R = [L, H, R]
     return R
 
-def box(type_, x):
+def box(lparen, x):
+    if lparen[0] == "\\":
+        x = Box("block", x)
+        type_ = lparen[1]
+    else:
+        type_ = lparen[0]
+
     if type_ == "(":
-        return x
-    if type_ == "[":
-        return Value("box", x)
-    if type_ in ("{", "\("):
-        return Value("block", x)
-    assert False
+        y = x
+    elif type_ == "[":
+        y = Box("box", x)
+    elif type_ == "{":
+        y = Box("quote", x)
+    else:
+        assert False
+
+    return y
 
 def pparse(toks):
     tok = next(toks)
@@ -116,4 +110,3 @@ if __name__ == "__main__":
     x = parse("EOF", lex.lex(x))
     x = pp(x)
     print(x)
-
