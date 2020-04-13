@@ -59,9 +59,13 @@ def fn_(head, body, env):
         y_var = head.value[1]
         assert isinstance(y_var, Value) and y_var.T == "sym"
         y_var = y_var.value[1:]
-    else:
+    elif isinstance(head, Value) and head.T == "sym":
         assert isinstance(head, Value) and head.T == "sym"
         x_var = head.value[1:]
+    elif head is NIL:
+        pass
+    else:
+        assert False
 
     assert isinstance(body, Box) and body.T == "block"
     return Value("fn", Fn(env, x_var, y_var, body.value))
