@@ -44,7 +44,9 @@ def pp(x):
             return "{{{}}}".format(pp(x.value))
     elif isinstance(x, Value):
         if x.T == "cons":
-            return "({}.{})".format(pp(x.value[0]), pp(x.value[1]))
+            sep = "." if x.value[2] == "L" else ":"
+            x, y = x.value[0], x.value[1]
+            return "({}{}{})".format(pp(x), sep, pp(y))
         if x.T == "fn":
             fn = x.value
             return "Fn({}.{} -> ...)".format(fn.x_var, fn.y_var)

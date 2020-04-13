@@ -7,8 +7,11 @@ import parse
 from typs import Box, Fn, Token, Value, NIL, ELSE, pp
 
 
-def cons_(x, y, _):
-    return Value("cons", [x, y])
+def cons_l(x, y, _):
+    return Value("cons", [x, y, "L"])
+
+def cons_r(x, y, _):
+    return Value("cons", [x, y, "R"])
 
 def plus_(x, y, _):
     assert x.T == y.T == "num"
@@ -45,11 +48,11 @@ def qq_(x, _, env):
 def fn_(x, _, env):
     x_var = y_var = None
 
-    if isinstance(x, Value) and x.T == "cons":
+    if isinstance(x, Value) and x.T == "cons" and x[2] == "L":
         head = x.value[0]
         x = x.value[1]
 
-        if isinstance(head, Value) and head.T == "cons":
+        if isinstance(head, Value) and head.T == "cons" and x[2] == "L":
             x_var = head.value[0]
             assert isinstance(x_var, Value) and x_var.T == "sym"
             x_var = x_var.value[1:]
@@ -142,14 +145,15 @@ def ex(env, x):
     return x
 
 
-CONS = Value("builtin", cons_)
+CONS_L = Value("builtin", cons_l)
+CONS_R = Value("builtin", cons_r)
 
 ENV = (None, {
     # cons
-    ".": CONS,
-    ":": CONS,
-    ",": CONS,
-    ";": CONS,
+    ".": CONS_L,
+    ":": CONS_R,
+    ",": CONS_R,
+    ";": CONS_L,
 
     # arithmetic
     "+": Value("builtin", plus_),

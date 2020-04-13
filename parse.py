@@ -86,9 +86,9 @@ def parse(expected_end, toks):
             elif op == ":|":
                 lvl = 3
                 right = 1
-            elif op == ",":
-                lvl = 2
             elif op == ";":
+                lvl = 2
+            elif op == ",":
                 lvl = 2
                 right = 1
             elif op.startswith(":"):
