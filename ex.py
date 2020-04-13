@@ -4,7 +4,7 @@ import sys
 
 import lex
 import parse
-from typs import Box, Fn, Token, Value, NIL, ELSE, pp
+from typs import Box, Fn, Token, Value, NIL, ZERO, ONE, pp
 
 
 def cons_l(x, y, _):
@@ -20,13 +20,16 @@ def plus_(x, y, _):
 def ask_(x, y, _):
     assert x.T == "num"
     if x.value == 0:
-        return ELSE
+        return NIL
     return y
 
 def else_(x, y, _):
-    if x is ELSE:
+    if x is NIL:
         return y
     return x
+
+def continue_(x, y, _):
+    return y
 
 
 def qq_(x, _, env):
@@ -48,11 +51,11 @@ def qq_(x, _, env):
 def fn_(x, _, env):
     x_var = y_var = None
 
-    if isinstance(x, Value) and x.T == "cons" and x[2] == "L":
+    if isinstance(x, Value) and x.T == "cons" and x.value[2] == "L":
         head = x.value[0]
         x = x.value[1]
 
-        if isinstance(head, Value) and head.T == "cons" and x[2] == "L":
+        if isinstance(head, Value) and head.T == "cons" and head.value[2] == "L":
             x_var = head.value[0]
             assert isinstance(x_var, Value) and x_var.T == "sym"
             x_var = x_var.value[1:]
@@ -69,6 +72,57 @@ def fn_(x, _, env):
 
     return Value("fn", Fn(env, x_var, y_var, body))
 
+
+def assign_(x, y, env):
+    if isinstance(x, Value) and x.T == "cons":
+        if y.T != "cons": assert False
+
+        x_dirn, y_dirn = x.value[2], y.value[2]
+        if x_dirn != y_dirn: assert False
+
+        xl, xr = x.value[0], x.value[1]
+        yl, yr = y.value[0], y.value[1]
+
+        assign_(xl, yl, env)
+        assign_(xr, yr, env)
+    elif isinstance(x, Box) and x.T == "box":
+        if not (isinstance(y, Box) and y.T == "box"): assert False
+        assign_(x.value, y.value, env)
+    elif isinstance(x, Value):
+        if x.T == "sym":
+            env[1][x.value[1:]] = y
+        else: assert False
+    else: assert False
+    return y
+
+def match__(x, y, env):
+    if isinstance(x, Value) and x.T == "cons":
+        if y.T != "cons": return False
+
+        x_dirn, y_dirn = x.value[2], y.value[2]
+        if x_dirn != y_dirn: return False
+
+        xl, xr = x.value[0], x.value[1]
+        yl, yr = y.value[0], y.value[1]
+
+        if not match__(xl, yl, env): return False
+        if not match__(xr, yr, env): return False
+    elif isinstance(x, Box) and x.T == "box":
+        if not (isinstance(y, Box) and y.T == "box"): return False
+
+        m = match__(x.value, y.value, env)
+        if not m: return m
+    elif isinstance(x, Value):
+        if x.T == "sym":
+            env[1][x.value[1:]] = y
+        else: return False
+    else: return False
+    return True
+
+def match_(x, y, env):
+    if match__(x, y, env):
+        return ONE
+    return NIL
 
 
 def ex(env, x):
@@ -164,13 +218,18 @@ ENV = (None, {
     # arithmetic
     "+": Value("builtin", plus_),
 
-    # conditionals
+    # control flow
     "?": Value("special", ask_),
     ":|": Value("special", else_),
+    "|": Value("special", continue_),
 
     # misc
     "qq": Value("builtin", qq_),
     "fn": Value("builtin", fn_),
+    ":-": Value("builtin", assign_),
+    ":=": Value("builtin", match_),
+    "-:": Value("builtin", lambda x, y, env: assign_(y, x, env)),
+    "=:": Value("builtin", lambda x, y, env: match_(y, x, env)),
 })
 
 # test fns
@@ -190,7 +249,7 @@ def env_lookup(env, key):
 if __name__ == "__main__":
     x = sys.argv[1]
     x = parse.Parse(x)
-    print("PAR", pp(x))
+    print("  PARSED:", pp(x))
 
     x = ex(ENV, x)
     print(pp(x))

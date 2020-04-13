@@ -29,7 +29,8 @@ class Fn:
 
 
 NIL = Value("nil", "()")
-ELSE = Value("else", "else")
+ZERO = Value("num", 0)
+ONE = Value("num", 1)
 
 
 def pp(x):
