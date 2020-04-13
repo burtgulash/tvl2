@@ -92,7 +92,13 @@ def ex(env, x):
             assert False
         elif isinstance(x, Token):
             if x.T == "num":
-                x = Value("num", int(x.value))
+                x = x.value
+                negative = x.startswith("_")
+                x = x.replace("_", "")
+                x = int(x)
+                if negative:
+                    x = -x
+                x = Value("num", x)
             elif x.T == "symbol":
                 x = Value("sym", x.value)
             elif x.T == "string":
