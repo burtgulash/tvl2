@@ -48,29 +48,23 @@ def qq_(x, _, env):
     return x
 
 
-def fn_(x, _, env):
+def fn_(head, body, env):
     x_var = y_var = None
 
-    if isinstance(x, Value) and x.T == "cons" and x.value[2] == "L":
-        head = x.value[0]
-        x = x.value[1]
+    if isinstance(head, Value) and head.T == "cons" and head.value[2] == "L":
+        x_var = head.value[0]
+        assert isinstance(x_var, Value) and x_var.T == "sym"
+        x_var = x_var.value[1:]
 
-        if isinstance(head, Value) and head.T == "cons" and head.value[2] == "L":
-            x_var = head.value[0]
-            assert isinstance(x_var, Value) and x_var.T == "sym"
-            x_var = x_var.value[1:]
+        y_var = head.value[1]
+        assert isinstance(y_var, Value) and y_var.T == "sym"
+        y_var = y_var.value[1:]
+    else:
+        assert isinstance(head, Value) and head.T == "sym"
+        x_var = head.value[1:]
 
-            y_var = head.value[1]
-            assert isinstance(y_var, Value) and y_var.T == "sym"
-            y_var = y_var.value[1:]
-        else:
-            assert isinstance(head, Value) and head.T == "sym"
-            x_var = head.value[1:]
-
-    assert isinstance(x, Box) and x.T == "block"
-    body = x.value
-
-    return Value("fn", Fn(env, x_var, y_var, body))
+    assert isinstance(body, Box) and body.T == "block"
+    return Value("fn", Fn(env, x_var, y_var, body.value))
 
 
 def assign_(x, y, env):
@@ -224,8 +218,8 @@ ENV = (None, {
     "|": Value("special", continue_),
 
     # misc
+    "->": Value("builtin", fn_),
     "qq": Value("builtin", qq_),
-    "fn": Value("builtin", fn_),
     ":-": Value("builtin", assign_),
     ":=": Value("builtin", match_),
     "-:": Value("builtin", lambda x, y, env: assign_(y, x, env)),
