@@ -45,7 +45,7 @@ def pp(x):
             return "{{{}}}".format(pp(x.value))
     elif isinstance(x, Value):
         if x.T == "cons":
-            sep = "." if x.value[2] == "L" else ":"
+            sep = x.value[2]
             x, y = x.value[0], x.value[1]
             return "({}{}{})".format(pp(x), sep, pp(y))
         if x.T == "fn":

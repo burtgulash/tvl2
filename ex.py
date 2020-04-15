@@ -7,15 +7,18 @@ import parse
 from typs import Box, Fn, Token, Value, NIL, ZERO, ONE, pp
 
 
-def cons_l(x, y, _):
-    return Value("cons", [x, y, "L"])
+def print_(x, y, _):
+    print(x.value)
+    return x
 
-def cons_r(x, y, _):
-    return Value("cons", [x, y, "R"])
+def NUM(x):
+    return Value("num", x)
 
-def plus_(x, y, _):
-    assert x.T == y.T == "num"
-    return Value("num", x.value + y.value)
+def from_bool_(x):
+    return [ZERO, ONE][x]
+
+def cons(x, y, typ):
+    return Value("cons", [x, y, typ])
 
 def ask_(x, y, _):
     assert x.T == "num"
@@ -51,7 +54,7 @@ def qq_(x, _, env):
 def fn_(head, body, env):
     x_var = y_var = None
 
-    if isinstance(head, Value) and head.T == "cons" and head.value[2] == "L":
+    if isinstance(head, Value) and head.T == "cons":
         x_var = head.value[0]
         assert isinstance(x_var, Value) and x_var.T == "sym"
         x_var = x_var.value[1:]
@@ -203,18 +206,18 @@ def ex(env, x):
     return x
 
 
-CONS_L = Value("builtin", cons_l)
-CONS_R = Value("builtin", cons_r)
-
 ENV = (None, {
     # cons
-    ".": CONS_L,
-    ":": CONS_R,
-    ",": CONS_R,
-    ";": CONS_L,
+    ".": Value("builtin", lambda x, y, _: cons(x, y, ".")),
+    ":": Value("builtin", lambda x, y, _: cons(x, y, ":")),
+    ",": Value("builtin", lambda x, y, _: cons(x, y, ",")),
+    ";": Value("builtin", lambda x, y, _: cons(x, y, ";")),
 
     # arithmetic
-    "+": Value("builtin", plus_),
+    "+": Value("builtin", lambda x, y, _: NUM(x.value + y.value)),
+    "-": Value("builtin", lambda x, y, _: NUM(x.value - y.value)),
+    "*": Value("builtin", lambda x, y, _: NUM(x.value * y.value)),
+    "==": Value("builtin", lambda x, y, _: from_bool_(x.value == y.value)),
 
     # control flow
     "?": Value("special", ask_),
@@ -228,6 +231,9 @@ ENV = (None, {
     ":=": Value("builtin", match_),
     "-:": Value("builtin", lambda x, y, env: assign_(y, x, env)),
     "=:": Value("builtin", lambda x, y, env: match_(y, x, env)),
+
+    # help
+    "pr": Value("builtin", print_),
 })
 
 # test fns
