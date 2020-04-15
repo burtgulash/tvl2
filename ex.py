@@ -7,6 +7,16 @@ import parse
 from typs import Box, Fn, Token, Value, NIL, ZERO, ONE, pp
 
 
+def cons_size_(x, typ):
+    if isinstance(x, Value) and x.T == "cons" and x.value[2] == typ:
+        return cons_size_(x.value[0], typ) + cons_size_(x.value[1], typ)
+    return 1
+
+def cons_typ_(x):
+    if isinstance(x, Value) and x.T == "cons":
+        return x.value[2]
+    return None
+
 def print_(x, y, _):
     print(x.value)
     return x
@@ -212,6 +222,7 @@ ENV = (None, {
     ":": Value("builtin", lambda x, y, _: cons(x, y, ":")),
     ",": Value("builtin", lambda x, y, _: cons(x, y, ",")),
     ";": Value("builtin", lambda x, y, _: cons(x, y, ";")),
+    "Size": Value("builtin", lambda x, y, _: NUM(cons_size_(x, cons_typ_(x)))),
 
     # arithmetic
     "+": Value("builtin", lambda x, y, _: NUM(x.value + y.value)),
