@@ -1,11 +1,23 @@
 #!/usr/bin/env python3
 
+import sys
 import readline
+import atexit
 
 from ex import *
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        histfile = sys.argv[1]
+        try:
+            readline.read_history_file(histfile)
+            readline.set_history_length(1000)
+        except FileNotFoundError:
+            pass
+        atexit.register(readline.write_history_file, histfile)
+
+
     readline.parse_and_bind("set editing-mode vi")
     try:
         while True:
@@ -19,5 +31,5 @@ if __name__ == "__main__":
                 print(pp(x))
             except Exception as err:
                 print("ERROR", err)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError):
         pass
