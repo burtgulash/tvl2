@@ -75,7 +75,7 @@ def qq_(x, _, env):
     if isinstance(x, (Token, Value)):
         pass
     elif isinstance(x, Box):
-        if x.T == "quote":
+        if x.T == "unquote":
             x = ex(env, x.value)
         else:
             x = Box(x.T, qq_(x.value, None, env))
@@ -179,6 +179,8 @@ def ex(env, x):
             if x.T == "quote":
                 x = qq_(x.value, None, env)
                 break
+            if x.T == "unquote":
+                x = x.value
             assert False
         elif isinstance(x, Token):
             if x.T == "num":

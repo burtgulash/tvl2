@@ -26,22 +26,20 @@ def flush_til(buf, outq, lvl):
     return R
 
 def box(lparen, x):
-    if lparen[0] == "\\":
-        x = Box("block", x)
-        type_ = lparen[1]
-    else:
-        type_ = lparen[0]
+    if lparen == "(":
+        return x
+    if lparen == "{":
+        return Box("lambda", x)
+    if lparen == "[":
+        return Box("box", x)
+    if lparen == r"\(":
+        return Box("block", x)
+    if lparen == r"\{":
+        return Box("quote", x)
+    if lparen == r"\[":
+        return Box("unquote", x)
+    assert False
 
-    if type_ == "(":
-        y = x
-    elif type_ == "[":
-        y = Box("box", x)
-    elif type_ == "{":
-        y = Box("quote", x)
-    else:
-        assert False
-
-    return y
 
 def pparse(toks):
     tok = next(toks)

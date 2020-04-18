@@ -1,0 +1,12 @@
+2020-04-18
+- remove dynamically scoped lambdas
+- int vs float distinction
+- error checking
+- multiplication and division precedence?
+- decide on meaning of \{ , { , \(
+- modules
+
+Proposal:
+	lambda: {x + y}
+	quasiquote: \(x + \{1 + 2})
+	function: (\x.\y -> x + y)
