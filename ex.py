@@ -3,7 +3,7 @@
 import sys
 
 import lex
-import parse
+from parse import Parse
 from typs import Box, Fn, Token, Value, NIL, ZERO, ONE, pp
 
 #
@@ -37,6 +37,12 @@ def cons_color_(x):
     if isinstance(x, Value) and x.T == "cons":
         return x.value[2]
     return None
+
+def cons_color(x, y, env):
+    if isinstance(x, Value) and x.T == "cons":
+        return ENV0[1][x.value[2]]  # TODO reach to ENV0?
+    return NIL
+
 
 def print_(x, y, _):
     print(pp(x))
@@ -246,7 +252,8 @@ ENV0 = (None, {
     ",": Value("builtin", lambda x, y, _: cons_(x, y, ",")),
     ";": Value("builtin", lambda x, y, _: cons_(x, y, ";")),
     "size": Value("builtin", lambda x, y, _: NUM(cons_size_(x, cons_color_(x)))),
-    "map": Value("builtin", lambda x, y, _: cons_map_(x, y)),
+    "color": Value("builtin", cons_color),
+    "is_cons": Value("builtin", lambda x, y, _: from_bool_(isinstance(x, Value) and x.T == "cons")),
 
     # arithmetic
     "+": Value("builtin", lambda x, y, _: Value("num", x.value + y.value)),
@@ -282,8 +289,10 @@ ENV0 = (None, {
 ENV = (ENV0, {})
 
 # test fns
-ENV[1]["foo"] = Value("fn", Fn(ENV, "a", "b", parse.Parse(r"a+b+b")))
-ENV[1]["map"] = Value("fn", Fn(ENV, "x", "f", parse.Parse(r"(\a.\b := x) ? ((a map f) . (b map f)) :| x f ()")))
+ENV[1]["foo"] = Value("fn", Fn(ENV, "a", "b", Parse(r"a+b+b")))
+
+ENV[1]["map_"] = Value("fn", Fn(ENV, "x", "y", Parse(r"\f; \col := y | \a(col)\b := x ? (a map_(f; col)) col (b map_(f; col)) :| x f()")))
+ENV[1]["map"] = Value("fn", Fn(ENV, "x", "f", Parse(r"x is_cons() ? x map_(f; x color.)")))
 
 
 def env_lookup(env, key):
@@ -301,7 +310,7 @@ if __name__ == "__main__":
     with open(x) as f:
         x = f.read()
 
-    x = parse.Parse(x)
+    x = Parse(x)
     #print("  PARSED:", pp(x))
 
     x = ex(ENV, x)
