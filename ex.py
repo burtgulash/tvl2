@@ -6,6 +6,17 @@ import lex
 import parse
 from typs import Box, Fn, Token, Value, NIL, ZERO, ONE, pp
 
+def to_float(x):
+    if isinstance(x, Value) and x.T == "cons":
+        a = x.value[0]
+        b = x.value[1]
+        assert isinstance(a, Value) and a.T == "num"
+        assert isinstance(b, Value) and b.T == "num"
+        return float(a.value) + float("0." + str(b.value))
+    elif isinstance(x, Value) and x.T == "num":
+        return float(x.value)
+    else:
+        assert False
 
 def cons_size_(x, typ):
     if isinstance(x, Value) and x.T == "cons" and x.value[2] == typ:
@@ -232,6 +243,7 @@ ENV = (None, {
     "-": Value("builtin", lambda x, y, _: NUM(x.value - y.value)),
     "*": Value("builtin", lambda x, y, _: NUM(x.value * y.value)),
     "==": Value("builtin", lambda x, y, _: from_bool_(x.value == y.value)),
+    "f": Value("builtin", lambda x, y, _: Value("float", to_float(x))),
 
     # control flow
     "?": Value("special", ask_),
