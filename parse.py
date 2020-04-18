@@ -77,7 +77,9 @@ def parse(expected_end, toks):
         right = 0
         if isinstance(H, Token):
             op = H.value
-            if op == "|":
+            if op == "->":
+                lvl = 6
+            elif op == "|":
                 lvl = 5
                 right = 1
             elif op == ":|":

@@ -106,8 +106,7 @@ def fn_(head, body, env):
     else:
         assert False
 
-    assert isinstance(body, Box) and body.T == "block"
-    return Value("fn", Fn(env, x_var, y_var, body.value))
+    return Value("fn", Fn(env, x_var, y_var, body))
 
 
 def assign_(x, y, env):
@@ -274,7 +273,7 @@ ENV0 = (None, {
 
     # misc
     "$": Value("builtin", lambda x, y, env: env_lookup(env, y.value[1:])),
-    "->": Value("builtin", fn_),
+    "->": Value("special", fn_),
     "qq": Value("builtin", qq_),
     ":-": Value("builtin", assign_), # TODO
     ":=": Value("builtin", lambda x, y, env: match_(x, y, env)), # TODO
