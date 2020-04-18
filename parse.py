@@ -71,10 +71,14 @@ def parse(expected_end, toks):
         if end:
             raise Exception("can't END on R")
 
-        lvl = 1
+        lvl = 0
         right = 0
         if isinstance(H, Token):
             op = H.value
+
+            if op.startswith(":"):
+                right = 1
+
             if op == "->":
                 lvl = 7
             elif op == "|":
@@ -93,8 +97,14 @@ def parse(expected_end, toks):
                 right = 1
             elif op == ",":
                 lvl = 2
-            elif op.startswith(":"):
-                right = 1
+            elif op in ("+", "-"):
+                lvl = 0
+            elif op in ("*", "/"):
+                lvl = -1
+            elif op == "::":
+                lvl = -3
+            elif op in (".", ":"):
+                lvl = -4
 
         assert right in (0, 1)
         buf.append(flush_til(buf, outq, lvl - right))

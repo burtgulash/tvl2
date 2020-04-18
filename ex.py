@@ -270,7 +270,7 @@ ENV0 = (None, {
     "==": Value("builtin", lambda x, y, _: from_bool_(x.value == y.value)),
     ">": Value("builtin", lambda x, y, _: from_bool_(x.value > y.value)),
     "<": Value("builtin", lambda x, y, _: from_bool_(x.value < y.value)),
-    "f": Value("builtin", lambda x, y, _: Value("num", to_float(x))),
+    "f64": Value("builtin", lambda x, y, _: Value("num", to_float(x))),
     "**": Value("builtin", lambda x, y, _: Value("num", pow(x.value, y.value))),
     "and": Value("builtin", lambda x, y, _: from_bool_(bool(x.value and y.value))),
 
@@ -281,6 +281,7 @@ ENV0 = (None, {
     "|": Value("special", continue_),
 
     # misc
+    "::": Value("builtin", lambda x, y, env: [x, y, NIL]),
     "$": Value("builtin", lambda x, y, env: env_lookup(env, y.value[1:])),
     "->": Value("special", fn_),
     "fn": Value("builtin", fn),
