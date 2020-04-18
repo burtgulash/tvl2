@@ -101,6 +101,8 @@ def parse(expected_end, toks):
                 lvl = 0
             elif op in ("*", "/"):
                 lvl = -1
+            elif op == "$":
+                lvl = -2
             elif op == "::":
                 lvl = -3
             elif op in (".", ":"):

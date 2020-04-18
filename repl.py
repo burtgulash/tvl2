@@ -11,15 +11,18 @@ from ex import *
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         histfile = sys.argv[1]
-        try:
-            readline.read_history_file(histfile)
-            readline.set_history_length(2000)
-        except FileNotFoundError:
-            pass
-        atexit.register(readline.write_history_file, histfile)
+    else:
+        histfile = "_history.txt"
 
+    try:
+        readline.read_history_file(histfile)
+        readline.set_history_length(2000)
+    except FileNotFoundError:
+        pass
+    atexit.register(readline.write_history_file, histfile)
 
     readline.parse_and_bind("set editing-mode vi")
+
     try:
         while True:
             x = input("    ")
