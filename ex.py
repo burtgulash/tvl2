@@ -6,6 +6,16 @@ import lex
 import parse
 from typs import Box, Fn, Token, Value, NIL, ZERO, ONE, pp
 
+#
+#def cons_map_(x, f):
+#    if isinstance(x, Value) and x.T == "cons":
+#        x, y, color = x.value[0], x.value[1], x.value[2]
+#        return cons_(cons_map_(x, f), cons_map_(y, f), color)
+#    if x is NIL:
+#        return NIL
+#    return [x, f, NIL]
+
+
 def to_float(x):
     if isinstance(x, Value) and x.T == "cons":
         a = x.value[0]
@@ -18,12 +28,12 @@ def to_float(x):
     else:
         assert False
 
-def cons_size_(x, typ):
-    if isinstance(x, Value) and x.T == "cons" and x.value[2] == typ:
-        return cons_size_(x.value[0], typ) + cons_size_(x.value[1], typ)
+def cons_size_(x, color):
+    if isinstance(x, Value) and x.T == "cons" and x.value[2] == color:
+        return cons_size_(x.value[0], color) + cons_size_(x.value[1], color)
     return 1
 
-def cons_typ_(x):
+def cons_color_(x):
     if isinstance(x, Value) and x.T == "cons":
         return x.value[2]
     return None
@@ -38,11 +48,10 @@ def NUM(x):
 def from_bool_(x):
     return [ZERO, ONE][x]
 
-def cons(x, y, typ):
-    return Value("cons", [x, y, typ])
+def cons_(x, y, color):
+    return Value("cons", [x, y, color])
 
 def ask_(x, y, _):
-    assert x.T == "num"
     if x.value == 0:
         return NIL
     return y
@@ -144,7 +153,7 @@ def match__(x, y, env):
 def match_(x, y, env):
     if match__(x, y, env):
         return ONE
-    return NIL
+    return ZERO
 
 
 def ex(env, x):
@@ -230,13 +239,14 @@ def ex(env, x):
     return x
 
 
-ENV = (None, {
+ENV0 = (None, {
     # cons
-    ".": Value("builtin", lambda x, y, _: cons(x, y, ".")),
-    ":": Value("builtin", lambda x, y, _: cons(x, y, ":")),
-    ",": Value("builtin", lambda x, y, _: cons(x, y, ",")),
-    ";": Value("builtin", lambda x, y, _: cons(x, y, ";")),
-    "Size": Value("builtin", lambda x, y, _: NUM(cons_size_(x, cons_typ_(x)))),
+    ".": Value("builtin", lambda x, y, _: cons_(x, y, ".")),
+    ":": Value("builtin", lambda x, y, _: cons_(x, y, ":")),
+    ",": Value("builtin", lambda x, y, _: cons_(x, y, ",")),
+    ";": Value("builtin", lambda x, y, _: cons_(x, y, ";")),
+    "size": Value("builtin", lambda x, y, _: NUM(cons_size_(x, cons_color_(x)))),
+    "map": Value("builtin", lambda x, y, _: cons_map_(x, y)),
 
     # arithmetic
     "+": Value("builtin", lambda x, y, _: Value("num", x.value + y.value)),
@@ -269,9 +279,11 @@ ENV = (None, {
     # help
     "pr": Value("builtin", print_),
 })
+ENV = (ENV0, {})
 
 # test fns
-#ENV[1]["foo"] = Value("fn", Fn(ENV, "a", "b", parse.Parse("a+b+b")))
+ENV[1]["foo"] = Value("fn", Fn(ENV, "a", "b", parse.Parse(r"a+b+b")))
+ENV[1]["map"] = Value("fn", Fn(ENV, "x", "f", parse.Parse(r"(\a.\b := x) ? ((a map f) . (b map f)) :| x f ()")))
 
 
 def env_lookup(env, key):
