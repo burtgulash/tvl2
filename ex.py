@@ -109,6 +109,10 @@ def fn_(head, body, env):
     return Value("fn", Fn(env, x_var, y_var, body))
 
 
+def fn(head, block, env):
+    assert isinstance(block, Box)
+    return fn_(head, block.value, env)
+
 def assign_(x, y, env):
     if isinstance(x, Value) and x.T == "cons":
         if y.T != "cons": assert False
@@ -177,10 +181,14 @@ def ex(env, x):
                 x = Box("box", x)
                 break
             if x.T == "quote":
-                x = qq_(x.value, None, env)
+                x = qq_(x, None, env)
                 break
             if x.T == "unquote":
                 x = x.value
+                continue
+            if x.T == "lambda":
+                x = Value("fn", Fn(env, "x", "y", x.value))
+                continue
             assert False
         elif isinstance(x, Token):
             if x.T == "num":
@@ -276,6 +284,7 @@ ENV0 = (None, {
     # misc
     "$": Value("builtin", lambda x, y, env: env_lookup(env, y.value[1:])),
     "->": Value("special", fn_),
+    "fn": Value("builtin", fn),
     "qq": Value("builtin", qq_),
     ":-": Value("builtin", assign_), # TODO
     ":=": Value("builtin", lambda x, y, env: match_(x, y, env)), # TODO
