@@ -2,7 +2,7 @@
 
 import sys
 
-from typs import Token
+from typs import Token, pp
 
 
 abc = "abcdefghijklmnopqrstuvwxyz"
@@ -111,6 +111,8 @@ def lex(chars):
 
 if __name__ == "__main__":
     x = sys.argv[1]
-    print(x)
+    with open(x) as f:
+        x = f.read()
+    print("LEX", x)
     x = list(lex(x))
-    print(x)
+    print(pp(x))

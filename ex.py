@@ -29,7 +29,7 @@ def cons_typ_(x):
     return None
 
 def print_(x, y, _):
-    print(x.value)
+    print(pp(x))
     return x
 
 def NUM(x):
@@ -239,11 +239,16 @@ ENV = (None, {
     "Size": Value("builtin", lambda x, y, _: NUM(cons_size_(x, cons_typ_(x)))),
 
     # arithmetic
-    "+": Value("builtin", lambda x, y, _: NUM(x.value + y.value)),
-    "-": Value("builtin", lambda x, y, _: NUM(x.value - y.value)),
-    "*": Value("builtin", lambda x, y, _: NUM(x.value * y.value)),
+    "+": Value("builtin", lambda x, y, _: Value("num", x.value + y.value)),
+    "-": Value("builtin", lambda x, y, _: Value("num", x.value - y.value)),
+    "*": Value("builtin", lambda x, y, _: Value("num", x.value * y.value)),
+    "/": Value("builtin", lambda x, y, _: Value("num", x.value / y.value)),
     "==": Value("builtin", lambda x, y, _: from_bool_(x.value == y.value)),
-    "f": Value("builtin", lambda x, y, _: Value("float", to_float(x))),
+    ">": Value("builtin", lambda x, y, _: from_bool_(x.value > y.value)),
+    "<": Value("builtin", lambda x, y, _: from_bool_(x.value < y.value)),
+    "f": Value("builtin", lambda x, y, _: Value("num", to_float(x))),
+    "**": Value("builtin", lambda x, y, _: Value("num", pow(x.value, y.value))),
+    "and": Value("builtin", lambda x, y, _: from_bool_(bool(x.value and y.value))),
 
     # control flow
     "?": Value("special", ask_),
@@ -281,8 +286,11 @@ def env_lookup(env, key):
 
 if __name__ == "__main__":
     x = sys.argv[1]
+    with open(x) as f:
+        x = f.read()
+
     x = parse.Parse(x)
-    print("  PARSED:", pp(x))
+    #print("  PARSED:", pp(x))
 
     x = ex(ENV, x)
     print(pp(x))
