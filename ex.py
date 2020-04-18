@@ -157,6 +157,9 @@ def ex(env, x):
             assert False
         elif isinstance(x, Token):
             if x.T == "num":
+                if x.value == "_":
+                    x = NIL # TODO infinity bo co?
+                    continue
                 x = x.value
                 negative = x.startswith("_")
                 x = x.replace("_", "")
@@ -236,19 +239,22 @@ ENV = (None, {
     "|": Value("special", continue_),
 
     # misc
+    "$": Value("builtin", lambda x, y, env: env_lookup(env, y.value[1:])),
     "->": Value("builtin", fn_),
     "qq": Value("builtin", qq_),
-    ":-": Value("builtin", assign_),
-    ":=": Value("builtin", match_),
-    "-:": Value("builtin", lambda x, y, env: assign_(y, x, env)),
-    "=:": Value("builtin", lambda x, y, env: match_(y, x, env)),
+    ":-": Value("builtin", assign_), # TODO
+    ":=": Value("builtin", lambda x, y, env: match_(x, y, env)), # TODO
+    "::=": Value("builtin", lambda x, y, env: match_(x, y, env[0])), # TODO
+    "-:": Value("builtin", lambda x, y, env: assign_(y, x, env)), # TODO
+    "=:": Value("builtin", lambda x, y, env: match_(y, x, env)), # TODO
+    "ENV": Value("builtin", lambda x, y, env: Value("env", env[1])),
 
     # help
     "pr": Value("builtin", print_),
 })
 
 # test fns
-ENV[1]["foo"] = Value("fn", Fn(ENV, "a", "b", parse.Parse("a+b+b")))
+#ENV[1]["foo"] = Value("fn", Fn(ENV, "a", "b", parse.Parse("a+b+b")))
 
 
 def env_lookup(env, key):

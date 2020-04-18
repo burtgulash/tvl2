@@ -51,6 +51,11 @@ def pp(x):
         if x.T == "fn":
             fn = x.value
             return "Fn({}.{} -> ...)".format(fn.x_var, fn.y_var)
+        if x.T == "builtin":
+            return "BFn"
+        if x.T == "env":
+            d = {k: pp(v) for k, v in x.value.items()}
+            return "Dict({})".format(d)
         return str(x.value)
     elif isinstance(x, Token):
         #return "T:" + str(x.value)

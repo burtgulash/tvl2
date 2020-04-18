@@ -83,7 +83,7 @@ def parse(expected_end, toks):
             elif op == ":|":
                 lvl = 4
                 right = 1
-            elif op in (":=", ":-"):
+            elif op in (":=", "::=", ":-"):
                 lvl = 3
                 right = 1
             elif op == ",":
