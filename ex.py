@@ -114,7 +114,9 @@ def fn(head, block, env):
     return fn_(head, block.value, env)
 
 def assign_(x, y, env):
-    if isinstance(x, Value) and x.T == "cons":
+    if x is NIL:
+        pass
+    elif isinstance(x, Value) and x.T == "cons":
         if y.T != "cons": assert False
 
         x_dirn, y_dirn = x.value[2], y.value[2]
@@ -136,7 +138,9 @@ def assign_(x, y, env):
     return y
 
 def match__(x, y, env):
-    if isinstance(x, Value) and x.T == "cons":
+    if x is NIL:
+        return True
+    elif isinstance(x, Value) and x.T == "cons":
         if y.T != "cons": return False
 
         x_dirn, y_dirn = x.value[2], y.value[2]
@@ -222,14 +226,9 @@ def ex(env, x):
 
             if isinstance(H, Value) and H.T in ("builtin", "special"):
                 x = H.value(L, R, env)
-            elif isinstance(H, Box) and H.T == "block":
-                if in_func:
-                    env = env[0]
-                env = (env, {"x": L, "y": R})
-                x = H.value
-                #x = ex(env1, H.value)
             elif isinstance(H, Value) and H.T == "fn":
-                if in_func:
+                if in_func: # Tail call optimization
+                    del env[1] # gargabe collection
                     env = env[0]
 
                 fn = H.value
@@ -241,7 +240,6 @@ def ex(env, x):
                 env = (fn.env, env_)
 
                 x = fn.body
-                #x = ex(env1, fn.body)
             else:
                 raise Exception(f"Can't process non function: {type(H).__name__}::{H.T}")
         else:
@@ -279,6 +277,7 @@ ENV0 = (None, {
     # control flow
     "?": Value("special", ask_),
     ":|": Value("special", else_),
+    "||": Value("special", else_), # TODO redundant?
     "|": Value("special", continue_),
 
     # misc
@@ -286,11 +285,9 @@ ENV0 = (None, {
     "->": Value("special", fn_),
     "fn": Value("builtin", fn),
     "qq": Value("builtin", qq_),
-    ":-": Value("builtin", assign_), # TODO
-    ":=": Value("builtin", lambda x, y, env: match_(x, y, env)), # TODO
-    "::=": Value("builtin", lambda x, y, env: match_(x, y, env[0])), # TODO
-    "-:": Value("builtin", lambda x, y, env: assign_(y, x, env)), # TODO
-    "=:": Value("builtin", lambda x, y, env: match_(y, x, env)), # TODO
+    "?=": Value("builtin", lambda x, y, env: match_(x, y, env)),
+    ":=": Value("builtin", lambda x, y, env: assign_(x, y, env)),
+    "::=": Value("builtin", lambda x, y, env: assign_(x, y, env[0])),
     "ENV": Value("builtin", lambda x, y, env: Value("env", env[1])),
 
     # help
@@ -301,7 +298,7 @@ ENV = (ENV0, {})
 # test fns
 ENV[1]["foo"] = Value("fn", Fn(ENV, "a", "b", Parse(r"a+b+b")))
 
-ENV[1]["map_"] = Value("fn", Fn(ENV, "x", "y", Parse(r"\f; \col := y | \a(col)\b := x ? (a map_(f; col)) col (b map_(f; col)) :| x f()")))
+ENV[1]["map_"] = Value("fn", Fn(ENV, "x", "y", Parse(r"\f; \col ?= y | \a(col)\b ?= x ? (a map_(f; col)) col (b map_(f; col)) :| x f()")))
 ENV[1]["map"] = Value("fn", Fn(ENV, "x", "f", Parse(r"x is_cons() ? x map_(f; x color.)")))
 
 

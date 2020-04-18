@@ -80,12 +80,12 @@ def parse(expected_end, toks):
             elif op == "|":
                 lvl = 6
                 right = 1
-            elif op == ":|":
+            elif op in (":|", "||"):
                 lvl = 5
                 right = 1
-            elif op == "?":
+            elif op == ("?"):
                 lvl = 4
-            elif op in (":=", "::=", "=?"):
+            elif op in (":=", "::=", "?="):
                 lvl = 4
                 right = 1
             elif op == ";":

@@ -3,6 +3,7 @@
 import sys
 import readline
 import atexit
+import traceback
 
 from ex import *
 
@@ -30,6 +31,7 @@ if __name__ == "__main__":
                 x = ex(ENV, x)
                 print(pp(x))
             except Exception as err:
+                traceback.print_exc(file=sys.stderr)
                 print("ERROR", err)
     except (KeyboardInterrupt, EOFError):
         pass
