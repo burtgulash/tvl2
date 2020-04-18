@@ -76,23 +76,23 @@ def parse(expected_end, toks):
         if isinstance(H, Token):
             op = H.value
             if op == "->":
-                lvl = 6
+                lvl = 7
             elif op == "|":
-                lvl = 5
+                lvl = 6
                 right = 1
             elif op == ":|":
-                lvl = 4
+                lvl = 5
                 right = 1
             elif op == "?":
-                lvl = 3
+                lvl = 4
             elif op in (":=", "::=", "=?"):
+                lvl = 4
+                right = 1
+            elif op == ";":
                 lvl = 3
                 right = 1
             elif op == ",":
                 lvl = 2
-            elif op == ";":
-                lvl = 2
-                right = 1
             elif op.startswith(":"):
                 right = 1
 
