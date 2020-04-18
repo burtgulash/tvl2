@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     try:
         readline.read_history_file(histfile)
-        readline.set_history_length(2000)
+        readline.set_history_length(1000)
     except FileNotFoundError:
         pass
     atexit.register(readline.write_history_file, histfile)
