@@ -40,7 +40,7 @@ def pp(x):
         if x.T == "block":
             return "\({})".format(pp(x.value))
         if x.T == "box":
-            return "[{}]".format(pp(x.value))
+            return "b[{}]".format(pp(x.value))
         if x.T == "quote":
             return "[{}]".format(pp(x.value))
         if x.T == "unquote":
@@ -52,7 +52,7 @@ def pp(x):
             return "({}{}{})".format(pp(x), sep, pp(y))
         if x.T == "fn":
             fn = x.value
-            return "Fn({}.{} -> ...)".format(fn.x_var, fn.y_var)
+            return "Fn({}.{} -> {})".format(fn.x_var, fn.y_var, pp(fn.body))
         if x.T == "builtin":
             return "BFn"
         if x.T == "env":

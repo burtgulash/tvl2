@@ -79,7 +79,7 @@ def parse(expected_end, toks):
             if op.startswith(":"):
                 right = 1
 
-            if op == "->":
+            if op in ("->", "=>"):
                 lvl = 7
             elif op == "|":
                 lvl = 6

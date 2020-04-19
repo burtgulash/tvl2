@@ -83,23 +83,26 @@ def continue_(x, y, _):
     return y
 
 
-def qq_(x, block, env):
+def qq_(x, quote_type, env):
     if isinstance(x, (Token, Value)):
-        if not block:
+        if quote_type == "unquote":
             x = ex(env, x)
     elif isinstance(x, Box):
         if x.T == "quote":
-            pass
+            x = Box(x.T, qq_(x.value, x.T, env))
         elif x.T == "unquote":
-            x = qq_(x.value, False, env)
+            x = qq_(x.value, x.T, env)
         else:
-            x = Box(x.T, qq_(x.value, block, env))
+            x = Box(x.T, qq_(x.value, quote_type, env))
     elif isinstance(x, list):
-        x = [qq_(x_, block, env) for x_ in x]
-        if all(not isinstance(x_, Box) for x_ in x):
-            x = ex(env, x)
-        else:
-            x = [x_.value if isinstance(x_, Box) and x_.T == "quote" else x_ for x_ in x]
+        x = [qq_(x_, quote_type, env) for x_ in x]
+
+        if quote_type == "unquote":
+            if all(not isinstance(x_, Box) for x_ in x):
+                x = ex(env, x)
+            else:
+                x = [x_.value if isinstance(x_, Box) and x_.T == "quote" else x_ for x_ in x]
+                x = Box("quote", x)
     else:
         assert False
 
@@ -126,6 +129,12 @@ def fn_(head, body, env):
         assert False
 
     return Value("fn", Fn(env, x_var, y_var, body))
+
+def fn_early(head, body, env):
+    body = qq_(body, "unquote", env)
+    if isinstance(body, Box) and body.T == "quote":
+        body = body.value
+    return fn_(head, body, env)
 
 
 def fn(head, block, env):
@@ -203,13 +212,11 @@ def ex(env, x):
                 x = ex(env, x.value)
                 x = Box("box", x)
                 break
-            if x.T == "quote":
-                x = qq_(x.value, True, env)
-                x = Box("quote", x) # TODO push this to qq_?
+            if x.T in ("quote", "unquote"):
+                x = qq_(x, x.T, env)
+                if isinstance(x, Box) and x.T == "quote":
+                    x = x.value
                 break
-            if x.T == "unquote":
-                x = x.value
-                continue
             if x.T == "lambda":
                 x = Value("fn", Fn(env, "x", "y", x.value))
                 continue
@@ -310,6 +317,7 @@ ENV0 = (None, {
     "::": Value("builtin", lambda x, y, env: [x, y, NIL]),
     "$": Value("builtin", lambda x, y, env: env_lookup(env, y.value[1:])),
     "->": Value("special", fn_),
+    "=>": Value("special", fn_early),
     "fn": Value("builtin", fn),
     "?=": Value("builtin", lambda x, y, env: match_(x, y, env)),
     ":=": Value("builtin", lambda x, y, env: assign_(x, y, env)),
