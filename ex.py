@@ -83,16 +83,23 @@ def continue_(x, y, _):
     return y
 
 
-def qq_(x, _, env):
+def qq_(x, block, env):
     if isinstance(x, (Token, Value)):
-        pass
+        if not block:
+            x = ex(env, x)
     elif isinstance(x, Box):
-        if x.T == "unquote":
-            x = ex(env, x.value)
+        if x.T == "quote":
+            pass
+        elif x.T == "unquote":
+            x = qq_(x.value, False, env)
         else:
-            x = Box(x.T, qq_(x.value, None, env))
+            x = Box(x.T, qq_(x.value, block, env))
     elif isinstance(x, list):
-        x = [qq_(x_, None, env) for x_ in x]
+        x = [qq_(x_, block, env) for x_ in x]
+        if all(not isinstance(x_, Box) for x_ in x):
+            x = ex(env, x)
+        else:
+            x = [x_.value if isinstance(x_, Box) and x_.T == "quote" else x_ for x_ in x]
     else:
         assert False
 
@@ -197,13 +204,18 @@ def ex(env, x):
                 x = Box("box", x)
                 break
             if x.T == "quote":
-                x = qq_(x, None, env)
+                x = qq_(x.value, True, env)
+                x = Box("quote", x) # TODO push this to qq_?
                 break
             if x.T == "unquote":
                 x = x.value
                 continue
             if x.T == "lambda":
                 x = Value("fn", Fn(env, "x", "y", x.value))
+                continue
+            if x.T == "clambda":
+                # TODO
+                #x = Value("fn", Fn(env, "x", "y", qq_(x.value, None, env)))
                 continue
             assert False
         elif isinstance(x, Token):
@@ -299,7 +311,6 @@ ENV0 = (None, {
     "$": Value("builtin", lambda x, y, env: env_lookup(env, y.value[1:])),
     "->": Value("special", fn_),
     "fn": Value("builtin", fn),
-    "qq": Value("builtin", qq_),
     "?=": Value("builtin", lambda x, y, env: match_(x, y, env)),
     ":=": Value("builtin", lambda x, y, env: assign_(x, y, env)),
     "::=": Value("builtin", lambda x, y, env: assign_(x, y, env[0])),

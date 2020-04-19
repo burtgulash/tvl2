@@ -42,7 +42,9 @@ def pp(x):
         if x.T == "box":
             return "[{}]".format(pp(x.value))
         if x.T == "quote":
-            return "{{{}}}".format(pp(x.value))
+            return "[{}]".format(pp(x.value))
+        if x.T == "unquote":
+            return "\[{}]".format(pp(x.value))
     elif isinstance(x, Value):
         if x.T == "cons":
             sep = x.value[2]

@@ -31,11 +31,11 @@ def box(lparen, x):
     if lparen == "{":
         return Box("lambda", x)
     if lparen == "[":
-        return Box("box", x)
+        return Box("quote", x)
     if lparen == r"\(":
         return Box("block", x)
     if lparen == r"\{":
-        return Box("quote", x)
+        return Box("clambda", x)
     if lparen == r"\[":
         return Box("unquote", x)
     assert False
