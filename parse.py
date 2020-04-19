@@ -92,10 +92,10 @@ def parse(expected_end, toks):
             elif op in (":=", "::=", "?="):
                 lvl = 4
                 right = 1
-            elif op == ";":
+            elif op in(";", ";;"):
                 lvl = 3
                 right = 1
-            elif op == ",":
+            elif op in (",", ",,"):
                 lvl = 2
             elif op in ("+", "-"):
                 lvl = 0

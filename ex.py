@@ -57,6 +57,18 @@ def from_bool_(x):
 def cons_(x, y, color):
     return Value("cons", [x, y, color])
 
+def cons_rlist_(x, y, env):
+    color = ";"
+    if isinstance(y, Value) and y.T == "cons" and y.value[2] == color:
+        return cons_(x, y, color)
+    return cons_(x, cons_(y, NIL, color), color)
+
+def cons_llist_(x, y, env):
+    color = ","
+    if isinstance(x, Value) and x.T == "cons" and x.value[2] == color:
+        return cons_(x, y, color)
+    return cons_(cons_(NIL, x, color), y, color)
+
 def ask_(x, y, _):
     if x.value == 0:
         return NIL
@@ -256,8 +268,10 @@ ENV0 = (None, {
     # cons
     ".": Value("builtin", lambda x, y, _: cons_(x, y, ".")),
     ":": Value("builtin", lambda x, y, _: cons_(x, y, ":")),
-    ",": Value("builtin", lambda x, y, _: cons_(x, y, ",")),
-    ";": Value("builtin", lambda x, y, _: cons_(x, y, ";")),
+    ",,": Value("builtin", lambda x, y, _: cons_(x, y, ",")),
+    ";;": Value("builtin", lambda x, y, _: cons_(x, y, ";")),
+    ",": Value("builtin", cons_llist_),
+    ";": Value("builtin", cons_rlist_),
     "size": Value("builtin", lambda x, y, _: NUM(cons_size_(x, cons_color_(x)))),
     "color": Value("builtin", cons_color),
     "is_cons": Value("builtin", lambda x, y, _: from_bool_(isinstance(x, Value) and x.T == "cons")),
