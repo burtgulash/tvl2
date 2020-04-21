@@ -58,7 +58,7 @@ def cons_(x, y, color):
     return Value("cons", [x, y, color])
 
 def cons_rlist_(x, y, env):
-    color = ";"
+    color = "|"
     if isinstance(y, Value) and y.T == "cons" and y.value[2] == color:
         return cons_(x, y, color)
     return cons_(x, cons_(y, NIL, color), color)
@@ -287,10 +287,10 @@ ENV0 = (None, {
     # cons
     ".": Value("builtin", lambda x, y, _: cons_(x, y, ".")),
     ":": Value("builtin", lambda x, y, _: cons_(x, y, ":")),
-    ",,": Value("builtin", lambda x, y, _: cons_(x, y, ",")),
-    ";;": Value("builtin", lambda x, y, _: cons_(x, y, ";")),
+    ".,": Value("builtin", lambda x, y, _: cons_(x, y, ",")),
+    "|.": Value("builtin", lambda x, y, _: cons_(x, y, "|")),
     ",": Value("builtin", cons_llist_),
-    ";": Value("builtin", cons_rlist_),
+    "|": Value("builtin", cons_rlist_),
     "size": Value("builtin", lambda x, y, _: NUM(cons_size_(x, cons_color_(x)))),
     "color": Value("builtin", cons_color),
     "is_cons": Value("builtin", lambda x, y, _: from_bool_(isinstance(x, Value) and x.T == "cons")),
@@ -309,9 +309,9 @@ ENV0 = (None, {
 
     # control flow
     "?": Value("special", ask_),
-    ":|": Value("special", else_),
+    #":|": Value("special", else_),
     "||": Value("special", else_), # TODO redundant?
-    "|": Value("special", continue_),
+    ";": Value("special", continue_),
 
     # misc
     "::": Value("builtin", lambda x, y, env: [x, y, NIL]),
