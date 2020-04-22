@@ -81,6 +81,7 @@ def parse(expected_end, toks):
 
             if op in ("->", "=>"):
                 lvl = 8
+                right = 1
             elif op == ";":
                 lvl = 7
                 right = 1
@@ -106,8 +107,13 @@ def parse(expected_end, toks):
                 lvl = -2
             elif op == "::":
                 lvl = -3
-            elif op in (".", ":"):
+                right = 1
+            elif op == ":":
                 lvl = -4
+                right = 1
+            elif op == ".":
+                lvl = -5
+                right = 1
 
         assert right in (0, 1)
         buf.append(flush_til(buf, outq, lvl - right))
